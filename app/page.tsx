@@ -3,11 +3,21 @@
 import { useState } from 'react';
 import Papa from 'papaparse';
 
+interface CSVRow {
+  [key: string]: string | number | boolean;
+}
+
+interface PapaParseResult {
+  data: CSVRow[];
+  errors: any[];
+  meta: any;
+}
+
 export default function Home() {
-  const [csvData, setCsvData] = useState<any[]>([]);
+  const [csvData, setCsvData] = useState<CSVRow[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
   const [sortColumns, setSortColumns] = useState<{ column: string; order: 'asc' | 'desc' }[]>([]);
-  const [sortedData, setSortedData] = useState<any[]>([]);
+  const [sortedData, setSortedData] = useState<CSVRow[]>([]);
   const [error, setError] = useState<string>('');
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,10 +26,10 @@ export default function Home() {
 
     Papa.parse(file, {
       header: true,
-      complete: (results) => {
+      complete: (results: PapaParseResult) => {
         // Remove the row containing "Orders Contained in Pull Sheet"
-        const filteredData = results.data.filter(row => {
-          return !Object.values(row).some(value => 
+        const filteredData = results.data.filter((row: CSVRow) => {
+          return !Object.values(row).some((value: string | number | boolean) => 
             typeof value === 'string' && value.includes('Orders Contained in Pull Sheet')
           );
         });
@@ -61,8 +71,17 @@ export default function Home() {
         if (typeof aValue === 'string' && typeof bValue === 'string') {
           const result = order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
           if (result !== 0) return result;
+        } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+          const result = order === 'asc' ? aValue - bValue : bValue - aValue;
+          if (result !== 0) return result;
+        } else if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+          const result = order === 'asc' ? (aValue ? 1 : 0) - (bValue ? 1 : 0) : (bValue ? 1 : 0) - (aValue ? 1 : 0);
+          if (result !== 0) return result;
         } else {
-          const result = order === 'asc' ? (aValue - bValue) : (bValue - aValue);
+          // For mixed types or undefined values, sort by string representation
+          const aStr = String(aValue);
+          const bStr = String(bValue);
+          const result = order === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
           if (result !== 0) return result;
         }
       }
