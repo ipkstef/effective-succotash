@@ -43,8 +43,15 @@ export default function Home() {
       // Filter out any rows containing "Orders Contained in Pull Sheet" and transform the data
       const transformedData = results.data
         .filter((row: any) => {
-          const productName = row['Product Name']?.toLowerCase() || '';
-          return !Object.values(row).some((value) => value?.toLowerCase().includes('orders contained in pull sheet') || value?.toLowerCase().includes('pull sheet'));
+          // Check if any value in the row contains the unwanted text
+          return !Object.values(row).some((value: any) => {
+            // Only check if the value is a string
+            if (typeof value === 'string') {
+              const lowerValue = value.toLowerCase();
+              return lowerValue.includes('orders contained in pull sheet') || lowerValue.includes('pull sheet');
+            }
+            return false;
+          });
         })
         .map((row: any) => {
           const number = row['Number'];
