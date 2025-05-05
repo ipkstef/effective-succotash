@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'CSV Sorter',
-  description: 'Sort your CSV files with multiple column sorting',
+  title: 'YuGiOh CSV Sorter',
+  description: 'stef is a god',
 }
 
 export default function RootLayout({
